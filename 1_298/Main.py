@@ -1,76 +1,49 @@
 #! /usr/bin/env python3
 
 import subprocess
+import sys
 from os.path import exists
 
+# .trr to .xtc
+xtc_file = "mds/prod2.xtc"
+trr_file = "mds/prod2.trr"
 
-# Emptying the folders
-subprocess.run("rm Coordinates/*", shell=True)
-subprocess.run("rm SysInfo.txt", shell=True)
-subprocess.run("rm Plots/*", shell=True)
-subprocess.run("rm Water/*", shell=True)
+if not exists(xtc_file):
+    if exists(trr_file):
+        try:
+            subprocess.run(
+                f"gmx trjconv -f {trr_file} -o {xtc_file} > /dev/null 2>&1",
+                shell=True,
+                check=True,
+            )
+            print(f"Conversion successful: {trr_file} converted to {xtc_file}")
+        except subprocess.CalledProcessError as e:
+            print(f"Error during conversion: {e}")
+            sys.exit(1)  # Exit with a non-zero status code
+    else:
+        print("Error: No .xtc or .trr file found.")
+        sys.exit(1)  # Exit with a non-zero status code
 
+# Empty the folders
+subprocess.run(
+    "find . -type f \( -name '*.txt' -o -name '*.csv' \) -delete", shell=True
+)
 
-### .TRR TO .XTC ###
-if exists("MDSfiles/prod2.xtc") == False:
-    subprocess.run(
-        "gmx trjconv -f MDSfiles/prod2.trr -o MDSfiles/prod2.xtc", shell=True
-    )
-
-
-### ITERATION LIMITS ###
-
+# Iteration limits
 start = 0
-end = 5
+end = 3
 
-n = end - start
+subprocess.run("gcc src/edgeList.c -o src/edgeList.out -lm", shell=True)
 
-
-####################
-# ITERATIONS BEGIN #
-####################
-
-subprocess.run("gcc Codes/EdgeListDA.c -o Codes/EdgeListDA -lm", shell=True)
-
+# Iterations begin
 for i in range(start, end):
     subprocess.run(
-        "python3 Codes/Coordinates.py", shell=True, input="{}".format(i), text=True
+        "python3 src/coordinates.py", shell=True, input="{}".format(i), text=True
     )
-
     subprocess.run(
-        "./Codes/EdgeListDA", input="{}".format(i), capture_output=True, text=True
+        "./src/edgeList.out", input="{}".format(i), capture_output=True, text=True
     )
+    subprocess.run("python3 src/network.py", shell=True)
 
-    # subprocess.run("python3 Codes/CompiledHBdata.py",shell=True)
-
-    subprocess.run("python3 Codes/Network.py", shell=True)
-
-
-#######################
-# ITERATIONS END HERE #
-#######################
-
-# subprocess.run("python3 Codes/RTadder.py",shell=True)
-
-# subprocess.run("python3 Codes/TableCreateLi.py",shell=True)
-
-
-### 3D PLOTTING ###
-
-
-def Plot():
-    # Print oxygen to oxygen H-bond vectors file ([Starting Point],[Direction])
-    subprocess.run("gcc Codes/HBvectors.c -o Codes/HBvectors -lm", shell=True)
-    subprocess.run("./Codes/HBvectors")
-
-    # Save the 3D plots as images (.svg, .eps, .jpg)
-    subprocess.run("python3 Codes/3DplotsLi.py", shell=True)
-
-    subprocess.run("rm Codes/HBvectors", shell=True)
-
-
-# Plot()
-
-
-### REMOVE UNNECESSARY FILES ###
-subprocess.run("rm Codes/EdgeListDA", shell=True)
+# Remove unnecessary files ###
+subprocess.run("rm src/*.out", shell=True)
