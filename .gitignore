@@ -11,3 +11,8 @@
 *.out
 *.exe
 *.csv
+*.tpr
+*.#
+*.mp4
+*.mp3
+*.gif
