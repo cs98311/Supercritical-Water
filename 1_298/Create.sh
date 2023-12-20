@@ -1,7 +1,7 @@
 #! /usr/bin/bash
 
-mkdir Codes
-mkdir Plots
-mkdir Coordinates
-mkdir MDSfiles
-mkdir Water
+mkdir results
+mkdir src
+mkdir results/coordinates
+mkdir mds
+mkdir results/water

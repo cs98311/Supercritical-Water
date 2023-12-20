@@ -5,11 +5,11 @@ import subprocess
 # Open files for coordinates at each iteration
 
 # File stores system info like box length, no. of water, TFSI, Li, Zn
-file0 = open("SysInfo.txt", "w")
+file0 = open("results/systemInfo.txt", "w")
 
-file1 = open("Coordinates/H1.txt", "w")
-file2 = open("Coordinates/H2.txt", "w")
-file3 = open("Coordinates/OW.txt", "w")
+file1 = open("results/coordinates/h1.txt", "w")
+file2 = open("results/coordinates/h2.txt", "w")
+file3 = open("results/coordinates/ow.txt", "w")
 
 
 # Takes input the iteration number from main file
@@ -21,7 +21,7 @@ print(num)
 # Generate .gro file for H2O, TFSI, Li, Zn at each iteration
 
 subprocess.run(
-    "gmx trjconv -f MDSfiles/prod2.xtc -s MDSfiles/prod2.gro -b {} -e {} -o all.gro".format(
+    "gmx trjconv -f mds/prod2.xtc -s mds/prod2.gro -b {} -e {} -o results/all.gro".format(
         num, num
     ),
     shell=True,
@@ -35,7 +35,7 @@ subprocess.run(
 
 countW = 0
 
-f = open("all.gro", "r")
+f = open("results/all.gro", "r")
 for line in f:
     if line[12:15] == "HW1":
         countW += 1
@@ -52,7 +52,7 @@ print(countW, file=file0)
 
 
 # Remove the .gro file at the end of iteration to avoid pileup
-subprocess.run("rm all.gro", shell=True)
+subprocess.run("rm results/all.gro", shell=True)
 
 
 # Close the opened files

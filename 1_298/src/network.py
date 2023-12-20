@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-nodes = np.loadtxt("SysInfo.txt")[1].astype(int)
+nodes = np.loadtxt("results/systemInfo.txt")[1].astype(int)
 nodes = [i for i in range(0, nodes)]
 
-edges = np.genfromtxt(r"Water/Edges.csv", delimiter=",", dtype=int)
+edges = np.genfromtxt(r"results/water/edges.csv", delimiter=",", dtype=int)
 
 G = nx.Graph()
 G.add_nodes_from(nodes, nodetype=int)
@@ -20,7 +20,7 @@ degree = [v for k, v in nx.degree(G)]
 heights, bins, plot = plt.hist(degree, bins=range(7), edgecolor="k")
 new_heights = 100 * heights / heights.sum()
 
-with open("Water/HBpercent.txt", "a") as f:
+with open("results/water/hBondPerc.txt", "a") as f:
     print(*np.round(new_heights, 4), file=f)
 
 
@@ -63,10 +63,10 @@ prob = prob * 100 / nx.number_of_nodes(G)
 heights, bins, plot = plt.hist(
     comp_sizes, bins=[*range(1, 5), 20, 50, 100, 300, 500, 600]
 )
-with open("Water/ClusterFreq.txt", "a") as f:
+with open("results/water/clusterFreq.txt", "a") as f:
     print(*heights, file=f)
 
-with open("Water/ClusterPerc.txt", "a") as f:
+with open("results/water/clusterPerc.txt", "a") as f:
     print(*np.round(prob, 4), file=f)
 
 
@@ -78,7 +78,7 @@ sizes = -np.sort(-sizes)
 
 
 if sizes.size:
-    with open("Water/Cycles.txt", "a") as f:
+    with open("results/water/cycles.txt", "a") as f:
         print(*sizes, file=f)
 
     prob = np.zeros(11)
@@ -90,21 +90,14 @@ if sizes.size:
     prob = prob / len(sizes)
     prob = prob[3:]
 
-    with open("Water/CyclesProbs.txt", "a") as f:
+    with open("results/water/cyclesProb.txt", "a") as f:
         print(*np.round(prob, 4), file=f)
-
-
-# with open('Water/ClusterCoeff.txt','a') as f:
-#     print(nx.cluster.average_clustering(G), file =f)
 
 
 components = nx.connected_components(G)
 largest_component = max(components, key=len)
 LCC = G.subgraph(largest_component)
 
-# with open('Water/SPL.txt','a') as f:
-#     print(nx.average_shortest_path_length(LCC), file =f)
 
-
-with open("Water/LCC.txt", "a") as f:
+with open("results/water/lcc.txt", "a") as f:
     print(len(LCC), file=f)

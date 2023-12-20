@@ -1,11 +1,11 @@
-// Each Water Molecule H-bonds Analysis
+// Each water Molecule H-bonds Analysis
 
 /*
 
 To Run:
-gcc Codes/BondChecker.c -o Codes/BondChecker -lm
-./Codes/BondChecker
-rm Codes/BondChecker
+gcc Codes/edgeListDA.c -o Codes/edgeListDA.out -lm
+./Codes/edgeListDA.out
+rm Codes/edgeListDA.out
 
 */
 
@@ -98,7 +98,7 @@ void PBC(double vector[3])
 
 // Function to check if H-bond is formed by current water molecule(m) being checked
 // with another water oxygen(i) in the system
-void Check_HB_Water(double H1[numW][3], double OW[numW][3], int m, int noH, FILE *fEdges, int Donor[numW], int Acceptor[numW])
+void Check_HB_water(double H1[numW][3], double OW[numW][3], int m, int noH, FILE *fEdges, int Donor[numW], int Acceptor[numW])
 {
 
 	int i = 0, j = 0;
@@ -167,16 +167,16 @@ void Check_HB_Water(double H1[numW][3], double OW[numW][3], int m, int noH, FILE
 int main()
 {
 
-	// Opening the files for Coordinates, System Info, Results,etc.//
+	// Opening the files for coordinates, System Info, Results,etc.//
 
-	FILE *fI = fopen("SysInfo.txt", "r");
+	FILE *fI = fopen("results/systemInfo.txt", "r");
 
-	FILE *fH1 = fopen("Coordinates/H1.txt", "r");
-	FILE *fH2 = fopen("Coordinates/H2.txt", "r");
-	FILE *fOW = fopen("Coordinates/OW.txt", "r");
+	FILE *fH1 = fopen("results/coordinates/h1.txt", "r");
+	FILE *fH2 = fopen("results/coordinates/h2.txt", "r");
+	FILE *fOW = fopen("results/coordinates/ow.txt", "r");
 
 	// Results storage files
-	FILE *fEdges = fopen("Water/Edges.csv", "w");
+	FILE *fEdges = fopen("results/water/edges.csv", "w");
 
 	// Defining and initializing any used variables
 	int i = 0, j = 0, k = 0, m = 0;
@@ -222,17 +222,17 @@ int main()
 	{
 
 		// Check for H1 hydogen first
-		Check_HB_Water(H1, OW, m, 1, fEdges, Donor, Acceptor);
+		Check_HB_water(H1, OW, m, 1, fEdges, Donor, Acceptor);
 
 		// Check for H2 hydrogen
-		Check_HB_Water(H2, OW, m, 2, fEdges, Donor, Acceptor);
+		Check_HB_water(H2, OW, m, 2, fEdges, Donor, Acceptor);
 	}
 
 	///////////////////////
 	// Iterations Finished//
 	///////////////////////
 
-	FILE *fH2Oda = fopen("Water/Donor_Acceptor.txt", "a");
+	FILE *fH2Oda = fopen("results/water/donorAcceptor.txt", "a");
 
 	double d0a0 = 0, d0a1 = 0, d0a2 = 0, d1a0 = 0, d1a1 = 0, d1a2 = 0, d2a0 = 0, d2a1 = 0, d2a2 = 0, totda = 0;
 
