@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 import subprocess
+import sys
 
 
-def main():
+def main(xtc_file, gro_file):
     try:
         # Open files for coordinates at each iteration
         fSys = open("results/systemInfo.txt", "w")
@@ -13,12 +14,12 @@ def main():
 
         # Takes input the iteration number from the main file
         # Print progress of iterations
-        num = input("Timestep : ")
-        print(f"{num}")
+        num = input("Enter iteration number: ")
+        print(f"Iteration number: {num}")
 
         # Generate .gro file for H2O, TFSI, Li, Zn at each iteration
         subprocess.run(
-            f"gmx trjconv -f mds/prod2.xtc -s mds/prod2.gro -b {num} -e {num} -o results/all.gro",
+            f"gmx trjconv -f {xtc_file} -s {gro_file} -b {num} -e {num} -o results/all.gro",
             shell=True,
             input="0\n",
             capture_output=True,
@@ -62,4 +63,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 3:
+        print("Usage: python3 coordinates.py mds/filename.xtc mds/filename.gro")
+        sys.exit(1)
+
+    xtc_file = sys.argv[1]
+    gro_file = sys.argv[2]
+
+    main(xtc_file, gro_file)

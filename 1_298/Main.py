@@ -7,6 +7,7 @@ from os.path import exists
 # .trr to .xtc
 xtc_file = "mds/prod2.xtc"
 trr_file = "mds/prod2.trr"
+gro_file = "mds/prod2.gro"
 
 if not exists(xtc_file):
     if exists(trr_file):
@@ -38,7 +39,10 @@ subprocess.run("gcc src/edgeList.c -o src/edgeList.out -lm", shell=True)
 # Iterations begin
 for i in range(start, end):
     subprocess.run(
-        "python3 src/coordinates.py", shell=True, input="{}".format(i), text=True
+        f"python3 src/coordinates.py {xtc_file} {gro_file}",
+        shell=True,
+        input="{}".format(i),
+        text=True,
     )
     subprocess.run(
         "./src/edgeList.out", input="{}".format(i), capture_output=True, text=True
