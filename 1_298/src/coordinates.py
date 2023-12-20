@@ -14,8 +14,8 @@ def main(xtc_file, gro_file):
 
         # Takes input the iteration number from the main file
         # Print progress of iterations
-        num = input("Enter iteration number: ")
-        print(f"Iteration number: {num}")
+        num = input("Timestep: ")
+        print(f"{num}")
 
         # Generate .gro file for H2O, TFSI, Li, Zn at each iteration
         subprocess.run(
