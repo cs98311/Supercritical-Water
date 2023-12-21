@@ -2,65 +2,67 @@
 
 from subprocess import run, CalledProcessError
 import sys
+from re import search
 
 
-def main(xtc_file, gro_file):
+def main(timestep, xtc_file, gro_file):
     try:
+        h1_coordinates_file = "results/coordinates/h1.txt"
+        h2_coordinates_file = "results/coordinates/h2.txt"
+        ow_coordinates_file = "results/coordinates/ow.txt"
+
         # Open files for coordinates at each iteration
-        fH1 = open("results/coordinates/h1.txt", "w")
-        fH2 = open("results/coordinates/h2.txt", "w")
-        fOW = open("results/coordinates/ow.txt", "w")
+        fH1 = open(h1_coordinates_file, "w")
+        fH2 = open(h2_coordinates_file, "w")
+        fOW = open(ow_coordinates_file, "w")
 
-        # Takes input the iteration number from the main file
         # Print progress of iterations
-        num = input("Timestep: ")
-        print(f"{num}")
+        print(f"Timestep: {timestep}")
 
-        # Generate .gro file at each iteration
+        # Generate .gro file with input=0 at each iteration
         run(
-            f"gmx trjconv -f {xtc_file} -s {gro_file} -b {num} -e {num} -o results/all.gro",
+            f"gmx trjconv -f {xtc_file} -s {gro_file} -b {timestep} -e {timestep} -o results/all.gro",
             shell=True,
             input="0\n",
             capture_output=True,
             text=True,
-            check=True,  # Add check=True for error handling
+            check=True,
         )
 
-        # Generate coordinate files for each element from the .gro files
+        # Extract coordinates for each element from the .gro files
         with open("results/all.gro", "r") as fCood:
             for line in fCood:
-                if line[12:15] == "HW1":
+                if search(r"HW1", line):
                     print(line[23:44], file=fH1)
-                elif line[12:15] == "HW2":
+                elif search(r"HW2", line):
                     print(line[23:44], file=fH2)
-                elif line[13:15] == "OW":
+                elif search(r"OW", line):
                     print(line[23:44], file=fOW)
 
-        # Remove the .gro file at the end of the iteration to avoid pileup
+        # Remove .gro file to avoid pileup
         run("rm results/all.gro", shell=True, check=True)
 
     except CalledProcessError as e:
         print(f"Error during subprocess: {e}")
-        exit(1)
     except FileNotFoundError as e:
         print(f"Error: {e}")
-        exit(1)
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
-        exit(1)
     finally:
-        # Close the opened files in a 'finally' block to ensure they are closed even if an exception occurs
         fH1.close()
         fH2.close()
         fOW.close()
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python3 coordinates.py mds/filename.xtc mds/filename.gro")
+    if len(sys.argv) != 4:
+        print(
+            "Usage: python3 coordinates.py timestep mds/filename.xtc mds/filename.gro"
+        )
         sys.exit(1)
 
-    xtc_file = sys.argv[1]
-    gro_file = sys.argv[2]
+    timestep = int(sys.argv[1])
+    xtc_file = sys.argv[2]
+    gro_file = sys.argv[3]
 
-    main(xtc_file, gro_file)
+    main(timestep, xtc_file, gro_file)
