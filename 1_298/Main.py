@@ -27,10 +27,12 @@ def run_command(command, error_message):
     try:
         run(command, shell=True, check=True)
     except CalledProcessError as e:
-        print(f"Error: {error_message}: {e.returncode}\n{e.stderr}")
+        print(
+            f"Error: {error_message}:\nReturn Code: {e.returncode}\nStderr:{e.stderr}"
+        )
         exit(1)
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        print(f"An unexpected error occurred in main.py: {e}")
         raise
 
 
@@ -59,10 +61,12 @@ def clean_folders():
         run(command, shell=True, check=True)
     except FileNotFoundError as e:
         print(f"Error deleting files: {e}\nPlease check file paths and permissions.")
+        exit(1)
     except PermissionError as e:
         print(
             f"Error: Insufficient permissions to delete files: {e}\nPlease adjust permissions or run with appropriate privileges."
         )
+        exit(1)
     except CalledProcessError as e:
         print(f"Error: Error deleting files: {e.returncode}\n{e.stderr}")
         exit(1)

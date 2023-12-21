@@ -96,11 +96,15 @@ def main():
             print(len(LCC), file=f)
 
     except FileNotFoundError as e:
-        print(f"Error: {e}")
-        exit(1)
+        print(f"Error in network.py: {e}. Make sure the paths are correct.")
+        raise
+
+    except IndexError as e:
+        print(f"An index error occurred in network.py: {e}")
+        raise
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        exit(1)
+        print(f"An unexpected error occurred in network.py: {e}")
+        raise
 
 
 if __name__ == "__main__":
