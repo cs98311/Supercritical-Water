@@ -6,8 +6,9 @@ from subprocess import run, CalledProcessError
 from re import search
 
 
-def extract_coordinates(timestep, xtc_file, gro_file):
-    results_dir = "results/coordinates"
+def extract_coordinates(
+    timestep, xtc_file, gro_file, results_dir="results/coordinates"
+):
     h1_coordinates_file = os.path.join(results_dir, "h1.txt")
     h2_coordinates_file = os.path.join(results_dir, "h2.txt")
     ow_coordinates_file = os.path.join(results_dir, "ow.txt")
@@ -50,17 +51,26 @@ def extract_coordinates(timestep, xtc_file, gro_file):
             ow_coordinates_file, "w"
         ) as fOW:
             for line in fCood:
-                if search(r"HW[12]", line):
-                    print(line[23:44], file=fH1 if "HW1" in line else fH2)
-                elif search(r"OW", line):
-                    print(line[23:44], file=fOW)
+                tokens = line.split()
+                if len(tokens) < 4:
+                    continue
+                if tokens[1].startswith("HW"):
+                    print(" ".join(tokens[3:6]), file=fH1 if "HW1" in line else fH2)
+                elif tokens[1] == "OW":
+                    print(" ".join(tokens[3:6]), file=fOW)
 
     except CalledProcessError as e:
-        print(f"Error during subprocess: {e}")
+        print(f"Error during subprocess in coordinates.py: {e}")
+        raise
     except FileNotFoundError as e:
-        print(f"Error: {e}")
+        print(f"Error in coordinates.py: {e}. Make sure the paths are correct.")
+        raise
+    except IndexError as e:
+        print(f"An index error occurred in coordinates.py: {e}")
+        raise
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        print(f"An unexpected error occurred in coordinates.py: {e}")
+        raise
     finally:
         # Remove .gro file to avoid pileup
         os.remove(all_gro_file)
