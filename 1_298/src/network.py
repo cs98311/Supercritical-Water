@@ -97,8 +97,10 @@ def main():
 
     except FileNotFoundError as e:
         print(f"Error: {e}")
+        exit(1)
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+        exit(1)
 
 
 if __name__ == "__main__":

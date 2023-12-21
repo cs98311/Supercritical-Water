@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import subprocess
+from subprocess import run, CalledProcessError
 import sys
 
 
@@ -17,7 +17,7 @@ def main(xtc_file, gro_file):
         print(f"{num}")
 
         # Generate .gro file at each iteration
-        subprocess.run(
+        run(
             f"gmx trjconv -f {xtc_file} -s {gro_file} -b {num} -e {num} -o results/all.gro",
             shell=True,
             input="0\n",
@@ -37,14 +37,17 @@ def main(xtc_file, gro_file):
                     print(line[23:44], file=fOW)
 
         # Remove the .gro file at the end of the iteration to avoid pileup
-        subprocess.run("rm results/all.gro", shell=True, check=True)
+        run("rm results/all.gro", shell=True, check=True)
 
-    except subprocess.CalledProcessError as e:
+    except CalledProcessError as e:
         print(f"Error during subprocess: {e}")
+        exit(1)
     except FileNotFoundError as e:
         print(f"Error: {e}")
+        exit(1)
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+        exit(1)
     finally:
         # Close the opened files in a 'finally' block to ensure they are closed even if an exception occurs
         fH1.close()

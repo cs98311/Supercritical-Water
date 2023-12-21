@@ -1,0 +1,4 @@
+#define NUM_H2O 512
+#define BOX_LENGTH 2.48344
+#define DISTANCE_CUTOFF 0.22
+#define ANGLE_CUTOFF 35
