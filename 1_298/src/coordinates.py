@@ -7,7 +7,6 @@ import sys
 def main(xtc_file, gro_file):
     try:
         # Open files for coordinates at each iteration
-        fSys = open("results/systemInfo.txt", "w")
         fH1 = open("results/coordinates/h1.txt", "w")
         fH2 = open("results/coordinates/h2.txt", "w")
         fOW = open("results/coordinates/ow.txt", "w")
@@ -17,7 +16,7 @@ def main(xtc_file, gro_file):
         num = input("Timestep: ")
         print(f"{num}")
 
-        # Generate .gro file for H2O, TFSI, Li, Zn at each iteration
+        # Generate .gro file at each iteration
         subprocess.run(
             f"gmx trjconv -f {xtc_file} -s {gro_file} -b {num} -e {num} -o results/all.gro",
             shell=True,
@@ -28,22 +27,14 @@ def main(xtc_file, gro_file):
         )
 
         # Generate coordinate files for each element from the .gro files
-        # Also keep count of water, TFSI, cations for the system info file
-        countW = 0
-
         with open("results/all.gro", "r") as fCood:
             for line in fCood:
                 if line[12:15] == "HW1":
-                    countW += 1
                     print(line[23:44], file=fH1)
                 elif line[12:15] == "HW2":
                     print(line[23:44], file=fH2)
                 elif line[13:15] == "OW":
                     print(line[23:44], file=fOW)
-                elif line[4] == ".":
-                    print(line[3:11], file=fSys)
-
-        print(countW, file=fSys)
 
         # Remove the .gro file at the end of the iteration to avoid pileup
         subprocess.run("rm results/all.gro", shell=True, check=True)
@@ -56,7 +47,6 @@ def main(xtc_file, gro_file):
         print(f"An unexpected error occurred: {e}")
     finally:
         # Close the opened files in a 'finally' block to ensure they are closed even if an exception occurs
-        fSys.close()
         fH1.close()
         fH2.close()
         fOW.close()

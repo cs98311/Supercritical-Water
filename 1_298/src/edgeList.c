@@ -12,14 +12,15 @@ rm Codes/edgeListDA.out
 #include <stdio.h>
 #include <math.h>
 
+#include "size.h"
+
 double box_length;
-int numW;
 
 double get_magnitude(double m[3]);
 double dot_product(double m[3], double n[3]);
 double vector_angle(double v1[3], double v2[3]);
 void PBC(double vector[3]);
-void checkHB(double H1[numW][3], double OW[numW][3], int m, int noH, FILE *fEdges, int donor[numW], int acceptor[numW]);
+void checkHB(double h1[NUM_W][3], double ow[NUM_W][3], int m, int noH, FILE *fEdges, int donor[NUM_W], int acceptor[NUM_W]);
 
 int main()
 {
@@ -36,19 +37,19 @@ int main()
 	}
 
 	// Scanning the System Info
-	fscanf(fSys, "%lf %d", &box_length, &numW);
+	fscanf(fSys, "%lf", &box_length);
 
 	// Defining arrays for all elements of the system
-	double H1[numW][3], H2[numW][3], OW[numW][3];
+	double h1[NUM_W][3] = {{0}}, h2[NUM_W][3] = {0}, ow[NUM_W][3] = {0};
 
 	// Scanning the coordinates from respective files //
-	for (int i = 0; i < numW; i++)
+	for (int i = 0; i < NUM_W; i++)
 	{
 		for (int j = 0; j < 3; j++)
 		{
-			fscanf(fH1, "%lf", &H1[i][j]);
-			fscanf(fH2, "%lf", &H2[i][j]);
-			fscanf(fOW, "%lf", &OW[i][j]);
+			fscanf(fH1, "%lf", &h1[i][j]);
+			fscanf(fH2, "%lf", &h2[i][j]);
+			fscanf(fOW, "%lf", &ow[i][j]);
 		}
 	}
 
@@ -57,28 +58,22 @@ int main()
 	fclose(fOW);
 	fclose(fSys);
 
-	int acceptor[numW], donor[numW];
-	for (int i = 0; i < numW; i++)
-	{
-		acceptor[i] = 0;
-		donor[i] = 0;
-	}
+	int acceptor[NUM_W] = {0}, donor[NUM_W] = {0};
 
 	// Starting Iterations
-
-	for (int m = 0; m < numW; m++)
+	for (int m = 0; m < NUM_W; m++)
 	{
-		// Check for H1 hydrogen
-		checkHB(H1, OW, m, 1, fEdges, donor, acceptor);
-		// Check for H2 hydrogen
-		checkHB(H2, OW, m, 2, fEdges, donor, acceptor);
+		// Check for h1 hydrogen
+		checkHB(h1, ow, m, 1, fEdges, donor, acceptor);
+		// Check for h2 hydrogen
+		checkHB(h2, ow, m, 2, fEdges, donor, acceptor);
 	}
 
 	fclose(fEdges);
 
 	FILE *fH2Oda = fopen("results/water/donorAcceptor.txt", "a");
 	double d0a0 = 0, d0a1 = 0, d0a2 = 0, d1a0 = 0, d1a1 = 0, d1a2 = 0, d2a0 = 0, d2a1 = 0, d2a2 = 0, totda = 0;
-	for (int i = 0; i < numW; i++)
+	for (int i = 0; i < NUM_W; i++)
 	{
 		if (donor[i] == 0 && acceptor[i] == 0)
 			d0a0 += 1;
@@ -144,7 +139,7 @@ void PBC(double vector[3])
 
 // Function to check if H-bond is formed by current water molecule(m) being checked
 // with another water oxygen(i) in the system
-void checkHB(double H1[numW][3], double OW[numW][3], int m, int noH, FILE *fEdges, int donor[numW], int acceptor[numW])
+void checkHB(double h1[NUM_W][3], double ow[NUM_W][3], int m, int noH, FILE *fEdges, int donor[NUM_W], int acceptor[NUM_W])
 {
 	double distance = 0, v1[3], v2[3], angle = 0;
 	double dL[3];
@@ -152,12 +147,12 @@ void checkHB(double H1[numW][3], double OW[numW][3], int m, int noH, FILE *fEdge
 	// v1 vector : Om-->Hm
 	for (int j = 0; j < 3; j++)
 	{
-		v1[j] = H1[m][j] - OW[m][j];
+		v1[j] = h1[m][j] - ow[m][j];
 	}
 	PBC(v1);
 
 	// Iterate over all water molecules
-	for (int i = 0; i < numW; i++)
+	for (int i = 0; i < NUM_W; i++)
 	{
 		// Avoiding the current water molecule for check
 		if (i == m)
@@ -166,7 +161,7 @@ void checkHB(double H1[numW][3], double OW[numW][3], int m, int noH, FILE *fEdge
 		// H-Bond vector : Hm-->Oi
 		for (int j = 0; j < 3; j++)
 		{
-			dL[j] = (OW[i][j] - H1[m][j]);
+			dL[j] = (ow[i][j] - h1[m][j]);
 		}
 		PBC(dL);
 
