@@ -27,10 +27,11 @@ def run_command(command, error_message):
     try:
         run(command, shell=True, check=True)
     except CalledProcessError as e:
-        print(f"Error: {error_message}: {e}")
+        print(f"Error: {error_message}: {e.returncode}\n{e.stderr}")
         exit(1)
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+        raise
 
 
 def convert_trr_to_xtc():
@@ -53,21 +54,35 @@ def check_gro_file():
 
 
 def clean_folders():
-    run_command(
-        f"find . -type f \( -name '*.txt' -o -name '*.csv' \) -delete",
-        "Error deleting files",
-    )
+    try:
+        command = f"find . -type f \( -name '*.txt' -o -name '*.csv' \) -delete"
+        run(command, shell=True, check=True)
+    except FileNotFoundError as e:
+        print(f"Error deleting files: {e}\nPlease check file paths and permissions.")
+    except PermissionError as e:
+        print(
+            f"Error: Insufficient permissions to delete files: {e}\nPlease adjust permissions or run with appropriate privileges."
+        )
+    except CalledProcessError as e:
+        print(f"Error: Error deleting files: {e.returncode}\n{e.stderr}")
+        exit(1)
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        raise
 
 
 def get_system_info():
     numH2O = 0
     box_length = 0
     with open(GRO_FILE, "r") as f:
+        box_length_pattern = r"^\s+(\d+\.\d+)\s+(\d+\.\d+)\s+(\d+\.\d+)$"
         for line in f:
             if search(r"HW1", line):
                 numH2O += 1
-            elif search(r".", line[:10]):
-                box_length = line[3:10]
+            match = search(box_length_pattern, line)
+            if match:
+                box_length = float(match.group(1))
+                break
     with open(SYSTEM_INFO_FILE, "w") as f:
         print(box_length, numH2O, sep="\n", file=f)
     return numH2O, box_length
