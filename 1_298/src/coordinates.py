@@ -1,55 +1,59 @@
 #!/usr/bin/env python3
 
-from subprocess import run, CalledProcessError
 import sys
+import os
+from subprocess import run, CalledProcessError
 from re import search
 
 
 def extract_coordinates(timestep, xtc_file, gro_file):
-    h1_coordinates_file = "results/coordinates/h1.txt"
-    h2_coordinates_file = "results/coordinates/h2.txt"
-    ow_coordinates_file = "results/coordinates/ow.txt"
+    results_dir = "results/coordinates"
+    h1_coordinates_file = os.path.join(results_dir, "h1.txt")
+    h2_coordinates_file = os.path.join(results_dir, "h2.txt")
+    ow_coordinates_file = os.path.join(results_dir, "ow.txt")
+    all_gro_file = os.path.join(results_dir, "all.gro")
 
     try:
-        # Open files for coordinates at each iteration
-        with open(h1_coordinates_file, "w") as fH1, open(
-            h2_coordinates_file, "w"
-        ) as fH2, open(ow_coordinates_file, "w") as fOW:
-            # Print progress of iterations
-            print(f"Timestep: {timestep}")
+        # Create results directory if it doesn't exist
+        os.makedirs(results_dir, exist_ok=True)
 
-            # Generate .gro file with input=0 at each iteration
-            run(
-                [
-                    "gmx",
-                    "trjconv",
-                    "-f",
-                    xtc_file,
-                    "-s",
-                    gro_file,
-                    "-b",
-                    str(timestep),
-                    "-e",
-                    str(timestep),
-                    "-o",
-                    "results/all.gro",
-                ],
-                input="0\n",
-                capture_output=True,
-                text=True,
-                check=True,
-            )
+        # Print progress of iterations
+        print(f"Timestep: {timestep}")
 
-            # Extract coordinates for each element from the .gro files
-            with open("results/all.gro", "r") as fCood:
-                for line in fCood:
-                    if search(r"HW[12]", line):
-                        print(line[23:44], file=fH1 if "HW1" in line else fH2)
-                    elif search(r"OW", line):
-                        print(line[23:44], file=fOW)
+        # Generate .gro file with input=0 at each iteration
+        generate_gro_command = [
+            "gmx",
+            "trjconv",
+            "-f",
+            xtc_file,
+            "-s",
+            gro_file,
+            "-b",
+            str(timestep),
+            "-e",
+            str(timestep),
+            "-o",
+            all_gro_file,
+        ]
+        run(
+            generate_gro_command,
+            input="0\n",
+            capture_output=True,
+            text=True,
+            check=True,
+        )
 
-            # Remove .gro file to avoid pileup
-            run(["rm", "results/all.gro"], check=True)
+        # Extract coordinates for each element from the .gro files
+        with open(all_gro_file, "r") as fCood, open(
+            h1_coordinates_file, "w"
+        ) as fH1, open(h2_coordinates_file, "w") as fH2, open(
+            ow_coordinates_file, "w"
+        ) as fOW:
+            for line in fCood:
+                if search(r"HW[12]", line):
+                    print(line[23:44], file=fH1 if "HW1" in line else fH2)
+                elif search(r"OW", line):
+                    print(line[23:44], file=fOW)
 
     except CalledProcessError as e:
         print(f"Error during subprocess: {e}")
@@ -57,6 +61,9 @@ def extract_coordinates(timestep, xtc_file, gro_file):
         print(f"Error: {e}")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+    finally:
+        # Remove .gro file to avoid pileup
+        os.remove(all_gro_file)
 
 
 def main():
