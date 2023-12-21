@@ -55,7 +55,7 @@ def check_gro_file():
 
 def clean_folders():
     try:
-        command = f"find . -type f \( -name '*.txt' -o -name '*.csv' \) -delete"
+        command = f"find . -type f \( -name '*.txt' -o -name '*.csv' -o -name '*.out' -o -name '*#' \) -delete"
         run(command, shell=True, check=True)
     except FileNotFoundError as e:
         print(f"Error deleting files: {e}\nPlease check file paths and permissions.")
