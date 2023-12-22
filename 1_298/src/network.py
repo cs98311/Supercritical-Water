@@ -88,12 +88,20 @@ def main():
             with open("results/water/cyclesProb.txt", "a") as f:
                 print(*np.round(prob, 4), file=f)
 
-        components = nx.connected_components(G)
-        largest_component = max(components, key=len)
-        LCC = G.subgraph(largest_component)
-
+        # Largest conncted component
         with open("results/water/lcc.txt", "a") as f:
-            print(len(LCC), file=f)
+            print(max(comp_sizes), file=f)
+
+        # Cluster fraction
+        with open("results/water/clusterFraction.txt", "a") as f:
+            print(1 - (degree.count(1) / len(nodes)), file=f)
+
+        # Normalised number of clusters
+        large_components = [comp for comp in components if len(comp) >= 2]
+        fraction_large_components = 2 * len(large_components) / len(nodes)
+
+        with open("results/water/normClusters.txt", "a") as f:
+            print(fraction_large_components, file=f)
 
     except FileNotFoundError as e:
         print(f"Error in network.py: {e}. Make sure the paths are correct.")
